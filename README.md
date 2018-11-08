@@ -1,3 +1,5 @@
+## This version of `react-scripts` is adjusted to enable usage with GraphCMS frontend applications.
+
 # react-scripts
 
 This package includes scripts and configuration used by [Create React App](https://github.com/facebook/create-react-app).<br>
