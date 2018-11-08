@@ -37,6 +37,7 @@ module.exports = (resolve, rootDir, isEjecting) => {
       isEjecting
         ? 'react-app-polyfill/jsdom'
         : require.resolve('react-app-polyfill/jsdom'),
+      isEjecting ? 'jest-canvas-mock' : require.resolve('jest-canvas-mock'),
     ],
 
     setupTestFrameworkScriptFile: setupTestsFile,
@@ -50,6 +51,7 @@ module.exports = (resolve, rootDir, isEjecting) => {
       '^.+\\.(js|jsx|ts|tsx)$': isEjecting
         ? '<rootDir>/node_modules/babel-jest'
         : resolve('config/jest/babelTransform.js'),
+      '\\.(graphql|gql)$': require.resolve('jest-transform-graphql'),
       '^.+\\.css$': resolve('config/jest/cssTransform.js'),
       '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': resolve(
         'config/jest/fileTransform.js'
@@ -62,6 +64,12 @@ module.exports = (resolve, rootDir, isEjecting) => {
     moduleNameMapper: {
       '^react-native$': 'react-native-web',
       '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
+      '@graphql/(.*)': '<rootDir>/src/graphql/$1',
+      '@components': '<rootDir>/src/components',
+      '@presentation': '<rootDir>/src/lib/presentation',
+      '@env': '<rootDir>/src/env',
+      '@utils': '<rootDir>/src/utils',
+      '@test-utils': '<rootDir>/src/setupTests',
     },
     moduleFileExtensions: [...paths.moduleFileExtensions, 'node'].filter(
       ext => !ext.includes('mjs')

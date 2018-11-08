@@ -27,8 +27,10 @@ const verifyPackageTree = require('./utils/verifyPackageTree');
 if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
   verifyPackageTree();
 }
-const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
-verifyTypeScriptSetup();
+
+// https://github.com/facebook/create-react-app/issues/5647
+// const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
+// verifyTypeScriptSetup();
 // @remove-on-eject-end
 
 const path = require('path');

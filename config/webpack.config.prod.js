@@ -27,8 +27,10 @@ const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt');
-const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
+// TODO: Decide how much reporting do we want in production
+// const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt');
+// const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 // @remove-on-eject-begin
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 // @remove-on-eject-end
@@ -234,6 +236,17 @@ module.exports = {
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
       'react-native': 'react-native-web',
+      // Webapp specific resolutions
+      '@components': path.resolve('./src/components'),
+      '@graphql': path.resolve('./src/graphql'),
+      '@presentation': path.resolve('./src/lib/presentation'),
+      '@env': path.resolve('./src/env'),
+      '@utils': path.resolve('./src/utils'),
+      '@test-utils': path.resolve('./src/setupTests.tsx'),
+      // We want to use es versions in production to allow tree shaking for those modules.
+      lodash: 'lodash-es',
+      '@material-ui/icons': '@material-ui/icons/es',
+      '@material-ui/core': '@material-ui/core/es',
     },
     plugins: [
       // Adds support for installing with Plug'n'Play, leading to faster installs and adding
@@ -259,33 +272,6 @@ module.exports = {
     rules: [
       // Disable require.ensure as it's not a standard language feature.
       { parser: { requireEnsure: false } },
-
-      // First, run the linter.
-      // It's important to do this before Babel processes the JS.
-      {
-        test: /\.(js|mjs|jsx)$/,
-        enforce: 'pre',
-        use: [
-          {
-            options: {
-              formatter: require.resolve('react-dev-utils/eslintFormatter'),
-              eslintPath: require.resolve('eslint'),
-              // @remove-on-eject-begin
-              // TODO: consider separate config for production,
-              // e.g. to enable no-console and no-debugger only in production.
-              baseConfig: {
-                extends: [require.resolve('eslint-config-react-app')],
-                settings: { react: { version: '999.999.999' } },
-              },
-              ignore: false,
-              useEslintrc: false,
-              // @remove-on-eject-end
-            },
-            loader: require.resolve('eslint-loader'),
-          },
-        ],
-        include: paths.appSrc,
-      },
       {
         // "oneOf" will traverse all following loaders until one will
         // match the requirements. When no loader matches it will fall
@@ -329,6 +315,7 @@ module.exports = {
               ]),
               // @remove-on-eject-end
               plugins: [
+                [require.resolve('babel-plugin-emotion')],
                 [
                   require.resolve('babel-plugin-named-asset-import'),
                   {
@@ -345,6 +332,12 @@ module.exports = {
               cacheCompression: true,
               compact: true,
             },
+          },
+          // https://github.com/aws-amplify/amplify-js/issues/686#issuecomment-387710340
+          {
+            test: /\.mjs$/,
+            include: /graphql/,
+            type: 'javascript/auto',
           },
           // Process any JS outside of the app with Babel.
           // Unlike the application JS, we only compile the standard ES features.
@@ -444,6 +437,10 @@ module.exports = {
               'sass-loader'
             ),
           },
+          {
+            test: /\.(graphql|gql)$/,
+            loader: 'graphql-tag/loader',
+          },
           // "file" loader makes sure assets end up in the `build` folder.
           // When you `import` an asset, you get its filename.
           // This loader doesn't use a "test" so it will catch all modules
@@ -520,50 +517,40 @@ module.exports = {
     // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
     // You can remove this if you don't use Moment.js:
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    // Generate a service worker script that will precache, and keep up to date,
-    // the HTML & assets that are part of the Webpack build.
-    new WorkboxWebpackPlugin.GenerateSW({
-      clientsClaim: true,
-      exclude: [/\.map$/, /asset-manifest\.json$/],
-      importWorkboxFrom: 'cdn',
-      navigateFallback: publicUrl + '/index.html',
-      navigateFallbackBlacklist: [
-        // Exclude URLs starting with /_, as they're likely an API call
-        new RegExp('^/_'),
-        // Exclude URLs containing a dot, as they're likely a resource in
-        // public/ and not a SPA route
-        new RegExp('/[^/]+\\.[^/]+$'),
-      ],
-    }),
     // TypeScript type checking
-    fs.existsSync(paths.appTsConfig) &&
-      new ForkTsCheckerWebpackPlugin({
-        typescript: resolve.sync('typescript', {
-          basedir: paths.appNodeModules,
-        }),
-        async: false,
-        checkSyntacticErrors: true,
-        tsconfig: paths.appTsConfig,
-        compilerOptions: {
-          module: 'esnext',
-          moduleResolution: 'node',
-          resolveJsonModule: true,
-          isolatedModules: true,
-          noEmit: true,
-          jsx: 'preserve',
-        },
-        reportFiles: [
-          '**',
-          '!**/*.json',
-          '!**/__tests__/**',
-          '!**/?(*.)(spec|test).*',
-          '!src/setupProxy.js',
-          '!src/setupTests.*',
-        ],
-        watch: paths.appSrc,
-        silent: true,
-        formatter: typescriptFormatter,
-      }),
+    // TODO: Decide how much reporting do we want in production
+    // fs.existsSync(paths.appTsConfig) &&
+    //   new ForkTsCheckerWebpackPlugin({
+    //     typescript: resolve.sync('typescript', {
+    //       basedir: paths.appNodeModules,
+    //     }),
+    //     async: false,
+    //     checkSyntacticErrors: true,
+    //     tsconfig: paths.appTsConfig,
+    //     compilerOptions: {
+    //       module: 'esnext',
+    //       moduleResolution: 'node',
+    //       resolveJsonModule: true,
+    //       isolatedModules: true,
+    //       noEmit: true,
+    //       jsx: 'preserve',
+    //     },
+    //     reportFiles: [
+    //       '**',
+    //       '!**/*.json',
+    //       '!**/__tests__/**',
+    //       '!**/?(*.)(spec|test).*',
+    //       '!src/setupProxy.js',
+    //       '!src/setupTests.*',
+    //     ],
+    //     watch: paths.appSrc,
+    //     silent: true,
+    //     formatter: typescriptFormatter,
+    //   }),
+    new LodashModuleReplacementPlugin({
+      collections: true,
+      shorthands: true,
+    }),
   ].filter(Boolean),
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
