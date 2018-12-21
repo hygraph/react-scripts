@@ -30,7 +30,6 @@ const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 // TODO: Decide how much reporting do we want in production
 // const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt');
 // const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
-const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 // @remove-on-eject-begin
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 // @remove-on-eject-end
@@ -315,7 +314,12 @@ module.exports = {
               ]),
               // @remove-on-eject-end
               plugins: [
-                [require.resolve('babel-plugin-emotion')],
+                [
+                  require.resolve('babel-plugin-emotion'),
+                  {
+                    cssPropOptimization: true,
+                  },
+                ],
                 [
                   require.resolve('babel-plugin-named-asset-import'),
                   {
@@ -547,10 +551,6 @@ module.exports = {
     //     silent: true,
     //     formatter: typescriptFormatter,
     //   }),
-    new LodashModuleReplacementPlugin({
-      collections: true,
-      shorthands: true,
-    }),
   ].filter(Boolean),
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
