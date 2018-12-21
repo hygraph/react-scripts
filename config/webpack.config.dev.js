@@ -240,7 +240,14 @@ module.exports = {
               ]),
               // @remove-on-eject-end
               plugins: [
-                [require.resolve('babel-plugin-emotion')],
+                [
+                  require.resolve('babel-plugin-emotion'),
+                  {
+                    sourceMap: true,
+                    autoLabel: true,
+                    cssPropOptimization: true,
+                  },
+                ],
                 [
                   require.resolve('babel-plugin-named-asset-import'),
                   {
