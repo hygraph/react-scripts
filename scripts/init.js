@@ -16,7 +16,7 @@ process.on('unhandledRejection', err => {
 
 const fs = require('fs-extra');
 const path = require('path');
-const chalk = require('chalk');
+const chalk = require('react-dev-utils/chalk');
 const execSync = require('child_process').execSync;
 const spawn = require('react-dev-utils/crossSpawn');
 const { defaultBrowsers } = require('react-dev-utils/browsersHelper');
@@ -99,6 +99,11 @@ module.exports = function(
     build: 'react-scripts build',
     test: 'react-scripts test',
     eject: 'react-scripts eject',
+  };
+
+  // Setup the eslint config
+  appPackage.eslintConfig = {
+    extends: 'react-app',
   };
 
   // Setup the browsers list
