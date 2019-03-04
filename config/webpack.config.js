@@ -28,7 +28,7 @@ const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin');
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
 // @remove-on-eject-begin
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
@@ -130,7 +130,7 @@ module.exports = function(webpackEnv) {
       ? shouldUseSourceMap
         ? 'source-map'
         : false
-      : isEnvDevelopment && 'eval-source-map',
+      : isEnvDevelopment && 'cheap-module-source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: [
@@ -362,7 +362,19 @@ module.exports = function(webpackEnv) {
                 // @remove-on-eject-begin
                 babelrc: false,
                 configFile: false,
-                presets: [require.resolve('babel-preset-react-app')],
+                presets: [
+                  require.resolve('babel-preset-react-app'),
+                  [
+                    require.resolve('@emotion/babel-preset-css-prop'),
+                    {
+                      // sourceMap is on by default but source maps are dead code eliminated in production
+                      sourceMap: isEnvDevelopment,
+                      autoLabel: isEnvProduction,
+                      labelFormat: '[local]',
+                      cssPropOptimization: true,
+                    },
+                  ],
+                ],
                 // Make sure we have a unique cache identifier, erring on the
                 // side of caution.
                 // We remove this when the user ejects because the default
@@ -381,16 +393,6 @@ module.exports = function(webpackEnv) {
                 ),
                 // @remove-on-eject-end
                 plugins: [
-                  [
-                    require.resolve('babel-plugin-emotion'),
-                    {
-                      // sourceMap is on by default but source maps are dead code eliminated in production
-                      sourceMap: isEnvDevelopment,
-                      autoLabel: isEnvProduction,
-                      labelFormat: '[local]',
-                      cssPropOptimization: true,
-                    },
-                  ],
                   [
                     require.resolve('babel-plugin-named-asset-import'),
                     {
@@ -466,9 +468,7 @@ module.exports = function(webpackEnv) {
               exclude: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvProduction && shouldUseSourceMap,
               }),
               // Don't consider CSS imports dead code even if the
               // containing package claims to have no side effects.
@@ -482,9 +482,7 @@ module.exports = function(webpackEnv) {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvProduction && shouldUseSourceMap,
                 modules: true,
                 getLocalIdent: getCSSModuleLocalIdent,
               }),
@@ -498,9 +496,7 @@ module.exports = function(webpackEnv) {
               use: getStyleLoaders(
                 {
                   importLoaders: 2,
-                  sourceMap: isEnvProduction
-                    ? shouldUseSourceMap
-                    : isEnvDevelopment,
+                  sourceMap: isEnvProduction && shouldUseSourceMap,
                 },
                 'sass-loader'
               ),
@@ -517,9 +513,7 @@ module.exports = function(webpackEnv) {
               use: getStyleLoaders(
                 {
                   importLoaders: 2,
-                  sourceMap: isEnvProduction
-                    ? shouldUseSourceMap
-                    : isEnvDevelopment,
+                  sourceMap: isEnvProduction && shouldUseSourceMap,
                   modules: true,
                   getLocalIdent: getCSSModuleLocalIdent,
                 },
