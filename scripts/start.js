@@ -72,7 +72,7 @@ if (process.env.HOST) {
     `If this was unintentional, check that you haven't mistakenly set it in your shell.`
   );
   console.log(
-    `Learn more here: ${chalk.yellow('http://bit.ly/CRA-advanced-config')}`
+    `Learn more here: ${chalk.yellow('https://bit.ly/CRA-advanced-config')}`
   );
   console.log();
 }
@@ -103,15 +103,15 @@ checkBrowsers(paths.appPath, isInteractive)
         devServer.sockWrite(devServer.sockets, 'errors', errors),
     };
     // Create a webpack compiler that is configured with custom messages.
-    const compiler = createCompiler(
-      webpack,
-      config,
+    const compiler = createCompiler({
       appName,
+      config,
+      devSocket,
       urls,
       useYarn,
       useTypeScript,
-      devSocket
-    );
+      webpack,
+    });
     // Load proxy config
     const proxySetting = require(paths.appPackageJson).proxy;
     const proxyConfig = prepareProxy(proxySetting, paths.appPublic);
