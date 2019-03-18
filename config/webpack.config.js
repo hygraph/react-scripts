@@ -368,7 +368,7 @@ module.exports = function(webpackEnv) {
                     {
                       // sourceMap is on by default but source maps are dead code eliminated in production
                       sourceMap: isEnvDevelopment,
-                      autoLabel: isEnvProduction,
+                      autoLabel: isEnvDevelopment,
                       labelFormat: '[local]',
                       cssPropOptimization: true,
                     },
